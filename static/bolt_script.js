@@ -72,6 +72,31 @@ function addChatMessage(agent, text) {
   chatArea.scrollTop = chatArea.scrollHeight;
 }
 
+// Update Progress
+function updateProgress(progress) {
+  const progressBar = document.getElementById('progressBar');
+  if (progressBar) {
+    progressBar.style.width = progress + '%';
+  }
+}
+
+// Show/Hide Generation Status
+function showGenerationStatus(message) {
+  const statusEl = document.getElementById('generationStatus');
+  const messageEl = document.getElementById('statusMessage');
+  if (statusEl && messageEl) {
+    messageEl.textContent = message;
+    statusEl.style.display = 'block';
+  }
+}
+
+function hideGenerationStatus() {
+  const statusEl = document.getElementById('generationStatus');
+  if (statusEl) {
+    statusEl.style.display = 'none';
+  }
+}
+
 // Update Status
 function updateStatus(status, text) {
   const statusBadge = document.getElementById('statusBadge');
@@ -192,6 +217,11 @@ document.getElementById('promptForm').addEventListener('submit', async (e) => {
       
       if (data.type === 'msg') {
         addChatMessage(data.agent, data.text);
+      } else if (data.type === 'status') {
+        if (data.progress !== undefined) {
+          updateProgress(data.progress);
+          showGenerationStatus(data.text || 'Generating...');
+        }
       } else if (data.type === 'frontend_code') {
         addChatMessage(data.agent, '✅ Frontend code generated successfully!');
         displayCode('frontend', data.text);
@@ -202,9 +232,16 @@ document.getElementById('promptForm').addEventListener('submit', async (e) => {
       } else if (data.type === 'error') {
         addChatMessage('System', '❌ Error: ' + data.text);
         updateStatus('ready', 'Error');
+        updateProgress(0);
+        hideGenerationStatus();
       } else if (data.type === 'done') {
         addChatMessage('System', '🎉 Generation complete! Your code is ready.');
         updateStatus('ready', 'Ready');
+        updateProgress(100);
+        setTimeout(() => {
+          updateProgress(0);
+          hideGenerationStatus();
+        }, 2000);
         isGenerating = false;
         sendButton.disabled = false;
         sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';

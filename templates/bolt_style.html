@@ -3,14 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>⚡ Vibe Coding - AI Code Generator</title>
+  <title>⚡ Advanced Code Generator - Full Stack AI</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/static/bolt_style.css">
+  <style>
+    .progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: #1a1a1a;
+      z-index: 9999;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .generation-status {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.9);
+      color: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      display: none;
+      z-index: 9998;
+    }
+  </style>
 </head>
 <body>
+  <!-- Progress Bar -->
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  
+  <!-- Generation Status -->
+  <div class="generation-status" id="generationStatus">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <i class="fas fa-spinner fa-spin"></i>
+      <span id="statusMessage">Generating code...</span>
+    </div>
+  </div>
+  
   <div class="app-container">
     <!-- Left Sidebar -->
     <div class="sidebar" id="sidebar">

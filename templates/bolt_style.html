@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚡ Vibe Coding - AI Code Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/bolt_style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Left Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon">⚡</span>
+          <span>Vibe Coding</span>
+        </div>
+      </div>
+      
+      <div class="sidebar-tabs">
+        <div class="sidebar-tab active">
+          <i class="fas fa-comments"></i> Chat
+        </div>
+      </div>
+      
+      <div class="chat-area" id="chatArea">
+        <div class="empty-preview">
+          <i class="fas fa-robot"></i>
+          <p>Start a conversation to generate code</p>
+        </div>
+      </div>
+      
+      <div class="input-area">
+        <form id="promptForm" class="input-wrapper">
+          <textarea 
+            id="promptInput" 
+            class="prompt-input" 
+            placeholder="Describe your app idea..."
+            rows="1"
+            required
+          ></textarea>
+          <button type="submit" class="send-button" id="sendButton">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="top-bar">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button class="toggle-sidebar-btn" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+          </button>
+          <span id="projectTitle" style="font-size: 14px; color: #888;">Untitled Project</span>
+          <span class="status-badge" id="statusBadge" style="display: none;">
+            <span class="status-dot"></span>
+            <span id="statusText">Ready</span>
+          </span>
+        </div>
+        
+        <div class="top-bar-actions">
+          <button class="action-btn" onclick="refreshPreview()">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+          <button class="action-btn" onclick="downloadAll()">
+            <i class="fas fa-download"></i> Download
+          </button>
+        </div>
+      </div>
+      
+      <div class="tab-navigation">
+        <button class="tab-btn active" data-tab="preview" onclick="switchTab('preview')">
+          <i class="fas fa-eye"></i> Preview
+        </button>
+        <button class="tab-btn" data-tab="frontend" onclick="switchTab('frontend')">
+          <i class="fab fa-html5"></i> Frontend
+        </button>
+        <button class="tab-btn" data-tab="backend" onclick="switchTab('backend')">
+          <i class="fab fa-python"></i> Backend
+        </button>
+      </div>
+      
+      <div class="content-panels">
+        <!-- Preview Panel -->
+        <div class="content-panel active" id="previewPanel">
+          <div class="preview-panel">
+            <div class="preview-toolbar">
+              <button class="code-action-btn" onclick="refreshPreview()">
+                <i class="fas fa-sync-alt"></i>
+              </button>
+              <div class="url-bar">
+                <i class="fas fa-lock" style="color: #22c55e; font-size: 12px;"></i>
+                <span>localhost:5000/preview</span>
+              </div>
+            </div>
+            <iframe id="previewFrame" class="preview-frame"></iframe>
+          </div>
+        </div>
+        
+        <!-- Frontend Code Panel -->
+        <div class="content-panel" id="frontendPanel">
+          <div class="code-panel">
+            <div class="code-toolbar">
+              <div class="file-tabs">
+                <button class="file-tab active">
+                  <i class="fab fa-html5" style="color: #e34c26;"></i>
+                  index.html
+                </button>
+              </div>
+              <div class="code-actions">
+                <button class="code-action-btn" onclick="copyCode('frontend')" id="copyFrontendBtn">
+                  <i class="fas fa-copy"></i> Copy
+                </button>
+                <button class="code-action-btn" onclick="downloadCode('frontend')">
+                  <i class="fas fa-download"></i> Download
+                </button>
+              </div>
+            </div>
+            <div class="code-content">
+              <div class="code-block">
+                <pre><code id="frontendCode" class="language-html">// Frontend code will appear here...</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Backend Code Panel -->
+        <div class="content-panel" id="backendPanel">
+          <div class="code-panel">
+            <div class="code-toolbar">
+              <div class="file-tabs">
+                <button class="file-tab active">
+                  <i class="fab fa-python" style="color: #3776ab;"></i>
+                  app.py
+                </button>
+              </div>
+              <div class="code-actions">
+                <button class="code-action-btn" onclick="copyCode('backend')" id="copyBackendBtn">
+                  <i class="fas fa-copy"></i> Copy
+                </button>
+                <button class="code-action-btn" onclick="downloadCode('backend')">
+                  <i class="fas fa-download"></i> Download
+                </button>
+              </div>
+            </div>
+            <div class="code-content">
+              <div class="code-block">
+                <pre><code id="backendCode" class="language-python"># Backend code will appear here...</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/bolt_script.js"></script>
+</body>
+</html>

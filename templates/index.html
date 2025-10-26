@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚡ AI App Builder</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    .container {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      height: 100vh;
+    }
+    
+    /* Left Sidebar */
+    .sidebar {
+      background: white;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 24px;
+    }
+    
+    .logo {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    
+    .tagline {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    
+    /* Chat Area */
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background: #f9fafb;
+    }
+    
+    .message {
+      margin-bottom: 16px;
+      animation: fadeIn 0.3s;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .msg-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    
+    .avatar-coder {
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+    
+    .avatar-system {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    .agent-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: #374151;
+    }
+    
+    .msg-content {
+      background: white;
+      padding: 12px;
+      border-radius: 10px;
+      border-left: 3px solid #667eea;
+      font-size: 14px;
+      color: #4b5563;
+    }
+    
+    /* Input Form */
+    .input-form {
+      padding: 20px;
+      background: white;
+      border-top: 1px solid #e5e7eb;
+    }
+    
+    .form-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 8px;
+      display: block;
+    }
+    
+    .idea-input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-bottom: 12px;
+      transition: 0.2s;
+    }
+    
+    .idea-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .generate-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    
+    .generate-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .generate-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Right Preview */
+    .preview-panel {
+      background: white;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .preview-header {
+      background: #f9fafb;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .preview-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+    
+    .download-btn {
+      padding: 8px 16px;
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #667eea;
+      display: none;
+    }
+    
+    .download-btn:hover {
+      border-color: #667eea;
+    }
+    
+    .preview-area {
+      flex: 1;
+      padding: 20px;
+      overflow: auto;
+    }
+    
+    .empty-state {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #9ca3af;
+    }
+    
+    .empty-icon {
+      font-size: 64px;
+      opacity: 0.3;
+      margin-bottom: 16px;
+    }
+    
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      background: white;
+      display: none;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+      <div class="header">
+        <div class="logo">⚡ AI App Builder</div>
+        <div class="tagline">Build apps instantly with AI</div>
+      </div>
+      
+      <div class="chat" id="chat">
+        <div class="empty-state" style="padding: 40px 20px; text-align: center;">
+          <div style="font-size: 48px; opacity: 0.3; margin-bottom: 12px;">💬</div>
+          <div style="color: #9ca3af;">Agent messages will appear here</div>
+        </div>
+      </div>
+      
+      <form class="input-form" id="form">
+        <label class="form-label">💡 Describe your app idea</label>
+        <input 
+          type="text" 
+          id="ideaInput" 
+          class="idea-input" 
+          placeholder="e.g., Calculator, Todo List, Timer"
+          autocomplete="off"
+          required
+        >
+        <button type="submit" class="generate-btn" id="generateBtn">
+          <span id="btnText">✨ Generate App</span>
+          <span id="btnLoading" style="display:none;">
+            <span class="spinner"></span> Building...
+          </span>
+        </button>
+      </form>
+    </div>
+    
+    <!-- Right Preview -->
+    <div class="preview-panel">
+      <div class="preview-header">
+        <div class="preview-title">🖥️ Live Preview</div>
+        <button class="download-btn" id="downloadBtn" onclick="downloadCode()">
+          📥 Download HTML
+        </button>
+      </div>
+      
+      <div class="preview-area">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">✨</div>
+          <div>Your app will appear here</div>
+        </div>
+        <iframe id="preview"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('form');
+    const ideaInput = document.getElementById('ideaInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const btnText = document.getElementById('btnText');
+    const btnLoading = document.getElementById('btnLoading');
+    const chat = document.getElementById('chat');
+    const preview = document.getElementById('preview');
+    const emptyState = document.getElementById('emptyState');
+    const downloadBtn = document.getElementById('downloadBtn');
+    
+    let generatedCode = '';
+    
+    function addMessage(agent, text) {
+      const emptyMsg = chat.querySelector('.empty-state');
+      if (emptyMsg) emptyMsg.remove();
+      
+      let emoji = agent === 'Coder' ? '💻' : '⚙️';
+      let avatarClass = agent === 'Coder' ? 'avatar-coder' : 'avatar-system';
+      
+      const msg = document.createElement('div');
+      msg.className = 'message';
+      msg.innerHTML = `
+        <div class="msg-header">
+          <div class="avatar ${avatarClass}">${emoji}</div>
+          <div class="agent-name">${agent}</div>
+        </div>
+        <div class="msg-content">${text}</div>
+      `;
+      
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+    
+    function showPreview(code) {
+      generatedCode = code;
+      preview.srcdoc = code;
+      preview.style.display = 'block';
+      emptyState.style.display = 'none';
+      downloadBtn.style.display = 'block';
+    }
+    
+    function downloadCode() {
+      if (!generatedCode) return;
+      const blob = new Blob([generatedCode], {type: 'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'app.html';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const idea = ideaInput.value.trim();
+      if (!idea) return;
+      
+      // Reset
+      chat.innerHTML = '';
+      preview.style.display = 'none';
+      emptyState.style.display = 'flex';
+      downloadBtn.style.display = 'none';
+      generatedCode = '';
+      
+      btnText.style.display = 'none';
+      btnLoading.style.display = 'inline';
+      generateBtn.disabled = true;
+      
+      const streamId = 'stream-' + Date.now();
+      
+      try {
+        const response = await fetch('/generate', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({idea, stream_id: streamId})
+        });
+        
+        const data = await response.json();
+        if (!data.success) throw new Error('Failed to start');
+        
+        const eventSource = new EventSource(`/stream/${streamId}`);
+        
+        eventSource.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === 'msg') {
+            addMessage(data.agent, data.text);
+          } else if (data.type === 'code') {
+            addMessage(data.agent, '✅ Code generated!');
+            showPreview(data.text);
+          } else if (data.type === 'error') {
+            addMessage('System', '❌ Error: ' + data.text);
+          } else if (data.type === 'done') {
+            btnText.style.display = 'inline';
+            btnLoading.style.display = 'none';
+            generateBtn.disabled = false;
+            eventSource.close();
+          }
+        };
+        
+        eventSource.onerror = () => {
+          addMessage('System', '❌ Connection error');
+          btnText.style.display = 'inline';
+          btnLoading.style.display = 'none';
+          generateBtn.disabled = false;
+          eventSource.close();
+        };
+        
+      } catch (error) {
+        addMessage('System', '❌ ' + error.message);
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+        generateBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

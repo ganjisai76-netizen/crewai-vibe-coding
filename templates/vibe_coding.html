@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚡ Vibe Coding - AI Code Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    .gradient-text {
+      background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+    }
+    
+    .code-block {
+      background: #0d1117;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .code-header {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .copy-btn {
+      background: rgba(167, 139, 250, 0.2);
+      color: #a78bfa;
+      border: 1px solid rgba(167, 139, 250, 0.3);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .copy-btn:hover {
+      background: rgba(167, 139, 250, 0.3);
+      border-color: rgba(167, 139, 250, 0.5);
+    }
+    
+    .copy-btn.copied {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+    
+    pre {
+      margin: 0;
+      padding: 16px;
+      overflow-x: auto;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    
+    pre code {
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    
+    .spinner {
+      border: 2px solid rgba(167, 139, 250, 0.3);
+      border-top-color: #a78bfa;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.4s ease-out;
+    }
+    
+    .pulse-glow {
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(167, 139, 250, 0.3); }
+      50% { box-shadow: 0 0 40px rgba(167, 139, 250, 0.6); }
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: rgba(167, 139, 250, 0.3);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(167, 139, 250, 0.5);
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white">
+  <!-- Header -->
+  <header class="border-b border-white/10 bg-black/20 backdrop-blur-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="text-3xl">⚡</div>
+          <div>
+            <h1 class="text-2xl font-bold gradient-text">Vibe Coding</h1>
+            <p class="text-sm text-gray-400">AI-Powered Code Generation</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 text-sm text-gray-400">
+          <span class="hidden sm:inline">Powered by</span>
+          <span class="font-semibold text-purple-400">CrewAI + Gemini</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <!-- Input Section -->
+    <div class="glass-card p-8 mb-8 fade-in">
+      <div class="max-w-3xl mx-auto">
+        <h2 class="text-xl font-semibold mb-2 text-center">✨ Describe Your App Idea</h2>
+        <p class="text-gray-400 text-sm text-center mb-6">
+          Tell us what you want to build, and our AI agents will generate both frontend and backend code
+        </p>
+        
+        <form id="promptForm" class="space-y-4">
+          <div>
+            <textarea
+              id="promptInput"
+              rows="3"
+              class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+              placeholder="e.g., Create a minimalist, dark mode dashboard for tracking crypto portfolio performance with three main metrics: Total Value, 24h Change, and a sparkline chart."
+              required
+            ></textarea>
+          </div>
+          
+          <button
+            type="submit"
+            id="generateBtn"
+            class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          >
+            <span id="btnText">🚀 Generate Code</span>
+            <span id="btnLoading" class="hidden">
+              <span class="spinner"></span> Generating...
+            </span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Agent Messages -->
+    <div id="agentMessages" class="mb-8 space-y-3 hidden"></div>
+
+    <!-- Output Section -->
+    <div id="outputSection" class="hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Frontend Code Output -->
+        <div class="glass-card p-6 fade-in">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="text-2xl">🎨</div>
+            <div>
+              <h3 class="text-lg font-semibold">Generated Frontend Code</h3>
+              <p class="text-sm text-gray-400">HTML + Tailwind CSS + JavaScript</p>
+            </div>
+          </div>
+          
+          <div class="code-block">
+            <div class="code-header">
+              <span class="text-sm text-gray-400 font-mono">index.html</span>
+              <button onclick="copyCode('frontend')" class="copy-btn" id="copyFrontendBtn">
+                📋 Copy
+              </button>
+            </div>
+            <pre><code id="frontendCode" class="language-html">// Frontend code will appear here...</code></pre>
+          </div>
+          
+          <button
+            onclick="downloadCode('frontend')"
+            class="mt-4 w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200"
+          >
+            📥 Download HTML
+          </button>
+        </div>
+
+        <!-- Backend Code Output -->
+        <div class="glass-card p-6 fade-in">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="text-2xl">⚙️</div>
+            <div>
+              <h3 class="text-lg font-semibold">Generated Backend Logic</h3>
+              <p class="text-sm text-gray-400">Python Flask API</p>
+            </div>
+          </div>
+          
+          <div class="code-block">
+            <div class="code-header">
+              <span class="text-sm text-gray-400 font-mono">app.py</span>
+              <button onclick="copyCode('backend')" class="copy-btn" id="copyBackendBtn">
+                📋 Copy
+              </button>
+            </div>
+            <pre><code id="backendCode" class="language-python"># Backend code will appear here...</code></pre>
+          </div>
+          
+          <button
+            onclick="downloadCode('backend')"
+            class="mt-4 w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200"
+          >
+            📥 Download Python
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Preview Section -->
+      <div class="glass-card p-6 mt-6 fade-in">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="text-2xl">🖥️</div>
+            <div>
+              <h3 class="text-lg font-semibold">Live Preview</h3>
+              <p class="text-sm text-gray-400">Frontend rendering</p>
+            </div>
+          </div>
+          <button
+            onclick="togglePreview()"
+            id="togglePreviewBtn"
+            class="bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 text-sm"
+          >
+            👁️ Show Preview
+          </button>
+        </div>
+        
+        <div id="previewContainer" class="hidden">
+          <iframe
+            id="previewFrame"
+            class="w-full h-[600px] bg-white rounded-lg border border-white/10"
+            sandbox="allow-scripts"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let frontendCodeContent = '';
+    let backendCodeContent = '';
+    let previewVisible = false;
+
+    const promptForm = document.getElementById('promptForm');
+    const promptInput = document.getElementById('promptInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const btnText = document.getElementById('btnText');
+    const btnLoading = document.getElementById('btnLoading');
+    const agentMessages = document.getElementById('agentMessages');
+    const outputSection = document.getElementById('outputSection');
+    const frontendCode = document.getElementById('frontendCode');
+    const backendCode = document.getElementById('backendCode');
+    const previewFrame = document.getElementById('previewFrame');
+    const previewContainer = document.getElementById('previewContainer');
+
+    function addAgentMessage(agent, text) {
+      agentMessages.classList.remove('hidden');
+      
+      const agentEmojis = {
+        'System': '⚙️',
+        'Frontend': '🎨',
+        'Backend': '⚙️'
+      };
+      
+      const agentColors = {
+        'System': 'from-purple-600 to-indigo-600',
+        'Frontend': 'from-pink-600 to-rose-600',
+        'Backend': 'from-blue-600 to-cyan-600'
+      };
+      
+      const msg = document.createElement('div');
+      msg.className = 'glass-card p-4 fade-in';
+      msg.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br ${agentColors[agent] || 'from-gray-600 to-gray-700'} flex items-center justify-center text-xl">
+            ${agentEmojis[agent] || '🤖'}
+          </div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">${agent}</div>
+            <div class="text-gray-300 text-sm">${text}</div>
+          </div>
+        </div>
+      `;
+      
+      agentMessages.appendChild(msg);
+      msg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function displayCode(type, code) {
+      if (type === 'frontend') {
+        frontendCodeContent = code;
+        frontendCode.textContent = code;
+        hljs.highlightElement(frontendCode);
+      } else if (type === 'backend') {
+        backendCodeContent = code;
+        backendCode.textContent = code;
+        hljs.highlightElement(backendCode);
+      }
+      
+      outputSection.classList.remove('hidden');
+      outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function copyCode(type) {
+      const code = type === 'frontend' ? frontendCodeContent : backendCodeContent;
+      const btn = document.getElementById(`copy${type.charAt(0).toUpperCase() + type.slice(1)}Btn`);
+      
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = '✅ Copied!';
+        btn.classList.add('copied');
+        
+        setTimeout(() => {
+          btn.textContent = '📋 Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+
+    function downloadCode(type) {
+      const code = type === 'frontend' ? frontendCodeContent : backendCodeContent;
+      const filename = type === 'frontend' ? 'index.html' : 'app.py';
+      const mimeType = type === 'frontend' ? 'text/html' : 'text/x-python';
+      
+      const blob = new Blob([code], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function togglePreview() {
+      previewVisible = !previewVisible;
+      const btn = document.getElementById('togglePreviewBtn');
+      
+      if (previewVisible) {
+        previewContainer.classList.remove('hidden');
+        previewFrame.srcdoc = frontendCodeContent;
+        btn.textContent = '🙈 Hide Preview';
+      } else {
+        previewContainer.classList.add('hidden');
+        btn.textContent = '👁️ Show Preview';
+      }
+    }
+
+    promptForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const idea = promptInput.value.trim();
+      if (!idea) return;
+      
+      // Reset UI
+      agentMessages.innerHTML = '';
+      agentMessages.classList.add('hidden');
+      outputSection.classList.add('hidden');
+      previewContainer.classList.add('hidden');
+      previewVisible = false;
+      frontendCodeContent = '';
+      backendCodeContent = '';
+      
+      // Update button state
+      btnText.classList.add('hidden');
+      btnLoading.classList.remove('hidden');
+      generateBtn.disabled = true;
+      
+      const streamId = 'stream-' + Date.now();
+      
+      try {
+        const response = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idea, stream_id: streamId })
+        });
+        
+        const data = await response.json();
+        if (!data.success) throw new Error('Failed to start generation');
+        
+        const eventSource = new EventSource(`/stream/${streamId}`);
+        
+        eventSource.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === 'msg') {
+            addAgentMessage(data.agent, data.text);
+          } else if (data.type === 'frontend_code') {
+            addAgentMessage(data.agent, '✅ Frontend code generated successfully!');
+            displayCode('frontend', data.text);
+          } else if (data.type === 'backend_code') {
+            addAgentMessage(data.agent, '✅ Backend code generated successfully!');
+            displayCode('backend', data.text);
+          } else if (data.type === 'error') {
+            addAgentMessage('System', '❌ Error: ' + data.text);
+          } else if (data.type === 'done') {
+            addAgentMessage('System', '🎉 Generation complete! Your code is ready.');
+            btnText.classList.remove('hidden');
+            btnLoading.classList.add('hidden');
+            generateBtn.disabled = false;
+            eventSource.close();
+          }
+        };
+        
+        eventSource.onerror = () => {
+          addAgentMessage('System', '❌ Connection error');
+          btnText.classList.remove('hidden');
+          btnLoading.classList.add('hidden');
+          generateBtn.disabled = false;
+          eventSource.close();
+        };
+        
+      } catch (error) {
+        addAgentMessage('System', '❌ ' + error.message);
+        btnText.classList.remove('hidden');
+        btnLoading.classList.add('hidden');
+        generateBtn.disabled = false;
+      }
+    });
+
+    // Initialize highlight.js
+    hljs.configure({ ignoreUnescapedHTML: true });
+  </script>
+</body>
+</html>

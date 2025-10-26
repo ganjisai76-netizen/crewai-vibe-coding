@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📸 Instagram Content Manager - Viral Content Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .instagram-gradient {
+      background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%);
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .caption-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin: 12px 0;
+      border-left: 4px solid #E1306C;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .caption-card:hover {
+      transform: translateX(8px);
+      box-shadow: 0 4px 16px rgba(225, 48, 108, 0.3);
+    }
+    
+    .caption-card.selected {
+      background: #fff5f8;
+      border-left-width: 6px;
+    }
+    
+    .hashtag-pill {
+      display: inline-block;
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #833ab4, #fd1d1d);
+      color: white;
+      border-radius: 20px;
+      margin: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .hashtag-pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(131, 58, 180, 0.4);
+    }
+    
+    .score-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #833ab4, #fd1d1d);
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    
+    .progress-bar {
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%);
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    .section-hidden {
+      display: none;
+    }
+    
+    .instagram-button {
+      background: linear-gradient(135deg, #833ab4, #fd1d1d);
+      color: white;
+      font-weight: 600;
+      padding: 16px 40px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 18px;
+    }
+    
+    .instagram-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(131, 58, 180, 0.4);
+    }
+    
+    .instagram-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .copy-button {
+      background: #f0f0f0;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+      color: #333;
+      font-weight: 600;
+    }
+    
+    .copy-button:hover {
+      background: linear-gradient(135deg, #833ab4, #fd1d1d);
+      color: white;
+    }
+    
+    .copy-button.copied {
+      background: #10b981;
+      color: white;
+    }
+    
+    .input-field {
+      width: 100%;
+      padding: 16px 20px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    
+    .input-field:focus {
+      outline: none;
+      border-color: #E1306C;
+      box-shadow: 0 0 0 3px rgba(225, 48, 108, 0.1);
+    }
+    
+    .select-field {
+      width: 100%;
+      padding: 16px 20px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 16px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .select-field:focus {
+      outline: none;
+      border-color: #E1306C;
+    }
+    
+    .viral-badge {
+      display: inline-block;
+      padding: 6px 14px;
+      background: linear-gradient(135deg, #fcb045, #fd1d1d);
+      color: white;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 700;
+      margin: 4px;
+      text-transform: uppercase;
+    }
+    
+    .script-card {
+      background: linear-gradient(135deg, #fff5f8 0%, #ffe5f0 100%);
+      border-radius: 16px;
+      padding: 24px;
+      margin: 16px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="max-w-7xl mx-auto mb-8">
+    <div class="glass-card p-8 text-center">
+      <h1 class="text-5xl font-bold mb-3" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        <i class="fab fa-instagram"></i> Instagram Content Manager
+      </h1>
+      <p class="text-gray-600 text-xl">AI-Powered Viral Content Generator - One Click, Complete Package</p>
+      <div class="flex justify-center gap-4 mt-4 flex-wrap">
+        <span class="viral-badge"><i class="fas fa-fire"></i> Viral Captions</span>
+        <span class="viral-badge"><i class="fas fa-hashtag"></i> 30 Hashtags</span>
+        <span class="viral-badge"><i class="fas fa-rocket"></i> Reel Scripts</span>
+        <span class="viral-badge"><i class="fas fa-chart-line"></i> Growth Strategy</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Section -->
+  <div class="max-w-7xl mx-auto mb-8" id="inputSection">
+    <div class="glass-card p-8">
+      <h2 class="text-3xl font-bold text-gray-800 mb-6">
+        <i class="fas fa-magic" style="color: #E1306C;"></i> Enter Topic & Click Create
+      </h2>
+      <form id="contentForm">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Content Niche</label>
+            <select id="niche" class="select-field">
+              <option>Fashion & Style</option>
+              <option>Fitness & Health</option>
+              <option>Food & Recipes</option>
+              <option>Travel & Adventure</option>
+              <option>Business & Entrepreneurship</option>
+              <option>Lifestyle & Wellness</option>
+              <option>Beauty & Makeup</option>
+              <option>Tech & Gadgets</option>
+              <option>Photography</option>
+              <option>Art & Design</option>
+              <option>Motivation & Inspiration</option>
+              <option>Pets & Animals</option>
+              <option>Parenting & Family</option>
+              <option>Education & Learning</option>
+              <option>Entertainment</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Post Type</label>
+            <select id="postType" class="select-field">
+              <option>Photo Post</option>
+              <option>Carousel (Multiple Images)</option>
+              <option>Reel (Video)</option>
+              <option>Story</option>
+              <option>IGTV</option>
+              <option>Live</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Content Tone</label>
+            <select id="tone" class="select-field">
+              <option>Professional</option>
+              <option>Casual & Fun</option>
+              <option>Inspirational</option>
+              <option>Educational</option>
+              <option>Humorous</option>
+              <option>Luxury</option>
+              <option>Authentic & Raw</option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-pen"></i> Content Topic / Idea
+          </label>
+          <textarea
+            id="topic"
+            rows="3"
+            class="input-field resize-none"
+            placeholder="Enter your content topic... (e.g., 'Morning workout routine for busy professionals' or 'Easy 5-minute vegan breakfast recipes')"
+            required
+          ></textarea>
+        </div>
+        <button
+          type="submit"
+          id="generateBtn"
+          class="instagram-button w-full"
+        >
+          <i class="fas fa-sparkles mr-2"></i>
+          <span id="btnText">🚀 Create Complete Content Package</span>
+          <span id="btnLoading" class="hidden">
+            <i class="fas fa-spinner fa-spin mr-2"></i> Generating Viral Content...
+          </span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Progress Section -->
+  <div class="max-w-7xl mx-auto mb-8 section-hidden" id="progressSection">
+    <div class="glass-card p-6">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-semibold text-gray-800">
+          <i class="fas fa-cog fa-spin" style="color: #E1306C;" class="mr-2"></i>
+          <span id="progressText">Initializing content generation...</span>
+        </h3>
+        <span id="progressPercent" style="color: #E1306C;" class="font-bold">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Section -->
+  <div class="max-w-7xl mx-auto section-hidden" id="resultsSection">
+    
+    <!-- Viral Captions -->
+    <div class="glass-card p-8 mb-8 fade-in">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold text-gray-800">
+          <i class="fas fa-pen-fancy" style="color: #E1306C;"></i> Viral Captions
+        </h2>
+        <button onclick="copyAllCaptions()" class="copy-button">
+          <i class="fas fa-copy mr-2"></i> Copy All
+        </button>
+      </div>
+      <div class="mb-6 p-6 bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg border-l-4" style="border-color: #E1306C;">
+        <h3 class="font-bold text-gray-800 mb-2 text-xl">🏆 Best Caption (Highest Engagement)</h3>
+        <p class="text-lg text-gray-900 whitespace-pre-wrap" id="bestCaption">-</p>
+        <button onclick="copyText('bestCaption')" class="copy-button mt-4">
+          <i class="fas fa-copy mr-2"></i> Copy Best Caption
+        </button>
+      </div>
+      <div id="captionsList"></div>
+      <div class="mt-6 bg-blue-50 p-4 rounded-lg">
+        <h3 class="font-semibold text-gray-700 mb-3">💡 Caption Tips</h3>
+        <ul id="captionTips" class="space-y-2"></ul>
+      </div>
+    </div>
+
+    <!-- Viral Hashtags -->
+    <div class="glass-card p-8 mb-8 fade-in">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold text-gray-800">
+          <i class="fas fa-hashtag" style="color: #fd1d1d;"></i> Viral Hashtags (30 Tags)
+        </h2>
+        <button onclick="copyAllHashtags()" class="copy-button">
+          <i class="fas fa-copy mr-2"></i> Copy All Hashtags
+        </button>
+      </div>
+      <div class="mb-6 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
+        <h3 class="font-bold text-gray-800 mb-3 text-xl">⭐ Recommended Set (Top 10)</h3>
+        <div id="recommendedHashtags" class="flex flex-wrap"></div>
+        <button onclick="copyRecommendedHashtags()" class="copy-button mt-4">
+          <i class="fas fa-copy mr-2"></i> Copy Recommended
+        </button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-3">🔥 Trending Hashtags (100K-1M)</h3>
+          <div id="trendingHashtags" class="flex flex-wrap"></div>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-3">📊 Medium Hashtags (10K-100K)</h3>
+          <div id="mediumHashtags" class="flex flex-wrap"></div>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-3">🎯 Niche Hashtags (1K-10K)</h3>
+          <div id="nicheHashtags" class="flex flex-wrap"></div>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-3">🏷️ Branded Hashtags</h3>
+          <div id="brandedHashtags" class="flex flex-wrap"></div>
+        </div>
+      </div>
+      <div class="bg-purple-50 p-4 rounded-lg">
+        <h3 class="font-semibold text-gray-700 mb-2">📝 Hashtag Strategy</h3>
+        <p class="text-gray-700" id="hashtagStrategy">-</p>
+        <div class="mt-4">
+          <span class="font-semibold">Viral Score: </span>
+          <span class="text-2xl font-bold" style="color: #E1306C;" id="viralScore">-/10</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hooks & CTAs -->
+    <div class="glass-card p-8 mb-8 fade-in">
+      <h2 class="text-3xl font-bold text-gray-800 mb-6">
+        <i class="fas fa-fish" style="color: #fcb045;"></i> Engagement Hooks & CTAs
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-bold text-gray-800 mb-4">🎣 Best Hook</h3>
+          <div class="p-4 bg-yellow-50 rounded-lg mb-4">
+            <p class="text-lg font-semibold" id="bestHook">-</p>
+          </div>
+          <h3 class="font-semibold text-gray-700 mb-3">Top 10 Caption Hooks</h3>
+          <div id="captionHooks" class="space-y-2"></div>
+        </div>
+        <div>
+          <h3 class="font-bold text-gray-800 mb-4">📢 Best CTA</h3>
+          <div class="p-4 bg-green-50 rounded-lg mb-4">
+            <p class="text-lg font-semibold" id="bestCTA">-</p>
+          </div>
+          <h3 class="font-semibold text-gray-700 mb-3">Top 5 Call-to-Actions</h3>
+          <div id="ctaList" class="space-y-2"></div>
+        </div>
+      </div>
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-3">🎬 Story/Reel Hooks</h3>
+          <div id="storyHooks" class="space-y-2"></div>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-3">💬 Comment Prompts</h3>
+          <div id="commentPrompts" class="space-y-2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reel & Story Scripts -->
+    <div class="glass-card p-8 mb-8 fade-in">
+      <h2 class="text-3xl font-bold text-gray-800 mb-6">
+        <i class="fas fa-video" style="color: #833ab4;"></i> Viral Reel & Story Scripts
+      </h2>
+      <div class="mb-6">
+        <h3 class="font-bold text-gray-800 mb-4 text-xl">🎬 Reel Scripts (15-30 seconds)</h3>
+        <div id="reelScripts"></div>
+      </div>
+      <div class="mb-6">
+        <h3 class="font-bold text-gray-800 mb-4 text-xl">📱 Story Sequences</h3>
+        <div id="storySequences"></div>
+      </div>
+      <div>
+        <h3 class="font-bold text-gray-800 mb-4 text-xl">📊 Carousel Post Structure</h3>
+        <div id="carouselStructure" class="script-card"></div>
+      </div>
+    </div>
+
+    <!-- Bio Optimization -->
+    <div class="glass-card p-8 mb-8 fade-in">
+      <h2 class="text-3xl font-bold text-gray-800 mb-6">
+        <i class="fas fa-user-circle" style="color: #fd1d1d;"></i> Profile Bio Optimization
+      </h2>
+      <div class="mb-6 p-6 bg-gradient-to-r from-red-50 to-orange-50 rounded-lg">
+        <h3 class="font-bold text-gray-800 mb-3 text-xl">🏆 Best Bio</h3>
+        <p class="text-lg font-semibold" id="bestBio">-</p>
+        <button onclick="copyText('bestBio')" class="copy-button mt-3">
+          <i class="fas fa-copy mr-2"></i> Copy
+        </button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-3">📝 Bio Variations</h3>
+          <div id="bioVariations" class="space-y-3"></div>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-3">✨ Name Suggestions</h3>
+          <div id="nameSuggestions" class="space-y-2"></div>
+          <h3 class="font-semibold text-gray-700 mb-3 mt-6">🔗 Link Text</h3>
+          <p class="text-gray-700" id="linkText">-</p>
+        </div>
+      </div>
+      <div class="bg-blue-50 p-4 rounded-lg">
+        <h3 class="font-semibold text-gray-700 mb-3">📌 Highlight Names</h3>
+        <div id="highlightNames" class="flex flex-wrap gap-2"></div>
+      </div>
+    </div>
+
+    <!-- Engagement Strategy -->
+    <div class="glass-card p-8 mb-8 fade-in">
+      <h2 class="text-3xl font-bold text-gray-800 mb-6">
+        <i class="fas fa-chart-line" style="color: #10b981;"></i> Growth & Engagement Strategy
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="bg-green-50 p-6 rounded-lg text-center">
+          <i class="fas fa-clock text-4xl text-green-600 mb-3"></i>
+          <h3 class="font-semibold text-gray-700 mb-2">Best Posting Times</h3>
+          <div id="postingTimes" class="text-sm text-gray-700"></div>
+        </div>
+        <div class="bg-blue-50 p-6 rounded-lg text-center">
+          <i class="fas fa-fire text-4xl text-blue-600 mb-3"></i>
+          <h3 class="font-semibold text-gray-700 mb-2">Viral Potential</h3>
+          <p class="text-4xl font-bold text-blue-600" id="viralPotential">-/10</p>
+        </div>
+        <div class="bg-purple-50 p-6 rounded-lg text-center">
+          <i class="fas fa-trophy text-4xl text-purple-600 mb-3"></i>
+          <h3 class="font-semibold text-gray-700 mb-2">Success Metrics</h3>
+          <div id="successMetrics" class="text-sm text-gray-700"></div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-3">💡 Engagement Tactics</h3>
+          <ul id="engagementTactics" class="space-y-2"></ul>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-3">🤖 Algorithm Tips</h3>
+          <ul id="algorithmTips" class="space-y-2"></ul>
+        </div>
+      </div>
+      <div class="bg-yellow-50 p-6 rounded-lg">
+        <h3 class="font-bold text-gray-800 mb-3">🚀 Growth Hacks</h3>
+        <ul id="growthHacks" class="space-y-2"></ul>
+      </div>
+    </div>
+
+    <!-- Content Calendar -->
+    <div class="glass-card p-8 mb-8 fade-in">
+      <h2 class="text-3xl font-bold text-gray-800 mb-6">
+        <i class="fas fa-calendar-alt" style="color: #fcb045;"></i> 7-Day Content Calendar
+      </h2>
+      <div id="contentCalendar" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="glass-card p-6 text-center">
+      <button onclick="window.print()" class="instagram-button mr-4">
+        <i class="fas fa-print mr-2"></i> Print Complete Package
+      </button>
+      <button onclick="location.reload()" class="instagram-button" style="background: linear-gradient(135deg, #666, #444);">
+        <i class="fas fa-redo mr-2"></i> Generate New Content
+      </button>
+    </div>
+  </div>
+
+  <script src="/static/instagram_manager.js"></script>
+</body>
+</html>

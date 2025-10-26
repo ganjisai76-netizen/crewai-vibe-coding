@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚀 Business Idea Analyzer - AI-Powered Analysis</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .gradient-text {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .metric-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 16px;
+      padding: 24px;
+      color: white;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .metric-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+    }
+    
+    .progress-bar {
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+    
+    .score-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: conic-gradient(#667eea 0deg, #764ba2 180deg, #e0e0e0 180deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    .score-inner {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .pulse {
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .section-hidden {
+      display: none;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .badge-high {
+      background: #10b981;
+      color: white;
+    }
+    
+    .badge-medium {
+      background: #f59e0b;
+      color: white;
+    }
+    
+    .badge-low {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body class="p-6">
+  <!-- Header -->
+  <div class="max-w-7xl mx-auto mb-8">
+    <div class="glass-card p-8 text-center">
+      <h1 class="text-4xl font-bold gradient-text mb-3">
+        <i class="fas fa-rocket"></i> Business Idea Analyzer
+      </h1>
+      <p class="text-gray-600 text-lg">AI-Powered Comprehensive Business Analysis</p>
+    </div>
+  </div>
+
+  <!-- Input Section -->
+  <div class="max-w-7xl mx-auto mb-8" id="inputSection">
+    <div class="glass-card p-8">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">
+        <i class="fas fa-lightbulb text-yellow-500"></i> Enter Your Business Idea
+      </h2>
+      <form id="analyzeForm">
+        <textarea
+          id="businessIdea"
+          rows="4"
+          class="w-full p-4 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none resize-none text-gray-800"
+          placeholder="Describe your business idea in detail... (e.g., 'A mobile app that connects local farmers directly with consumers for fresh produce delivery')"
+          required
+        ></textarea>
+        <button
+          type="submit"
+          id="analyzeBtn"
+          class="mt-4 w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-4 px-8 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+        >
+          <i class="fas fa-chart-line mr-2"></i>
+          <span id="btnText">Analyze Business Idea</span>
+          <span id="btnLoading" class="hidden">
+            <i class="fas fa-spinner fa-spin mr-2"></i> Analyzing...
+          </span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Progress Section -->
+  <div class="max-w-7xl mx-auto mb-8 section-hidden" id="progressSection">
+    <div class="glass-card p-6">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-semibold text-gray-800">
+          <i class="fas fa-cog fa-spin text-purple-600 mr-2"></i>
+          <span id="progressText">Initializing analysis...</span>
+        </h3>
+        <span id="progressPercent" class="text-purple-600 font-bold">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Dashboard -->
+  <div class="max-w-7xl mx-auto section-hidden" id="resultsSection">
+    
+    <!-- Overall Scores -->
+    <div class="glass-card p-8 mb-8 fade-in">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">
+        <i class="fas fa-star text-yellow-500"></i> Overall Analysis Scores
+      </h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="text-center">
+          <div class="score-circle mx-auto mb-3" id="ideaScoreCircle">
+            <div class="score-inner">
+              <span class="text-3xl font-bold gradient-text" id="ideaScore">-</span>
+              <span class="text-xs text-gray-500">/ 10</span>
+            </div>
+          </div>
+          <p class="font-semibold text-gray-700">Idea Rating</p>
+        </div>
+        <div class="text-center">
+          <div class="score-circle mx-auto mb-3" id="marketScoreCircle">
+            <div class="score-inner">
+              <span class="text-3xl font-bold gradient-text" id="marketScore">-</span>
+              <span class="text-xs text-gray-500">/ 10</span>
+            </div>
+          </div>
+          <p class="font-semibold text-gray-700">Market Score</p>
+        </div>
+        <div class="text-center">
+          <div class="score-circle mx-auto mb-3" id="financialScoreCircle">
+            <div class="score-inner">
+              <span class="text-3xl font-bold gradient-text" id="financialScore">-</span>
+              <span class="text-xs text-gray-500">/ 10</span>
+            </div>
+          </div>
+          <p class="font-semibold text-gray-700">Financial Score</p>
+        </div>
+        <div class="text-center">
+          <div class="score-circle mx-auto mb-3" id="futureScoreCircle">
+            <div class="score-inner">
+              <span class="text-3xl font-bold gradient-text" id="futureScore">-</span>
+              <span class="text-xs text-gray-500">/ 10</span>
+            </div>
+          </div>
+          <p class="font-semibold text-gray-700">Future Potential</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="metric-card fade-in">
+        <div class="flex items-center justify-between mb-2">
+          <i class="fas fa-chart-pie text-3xl"></i>
+          <span class="text-sm opacity-80">TAM</span>
+        </div>
+        <h3 class="text-3xl font-bold mb-1" id="tamValue">-</h3>
+        <p class="text-sm opacity-90">Total Addressable Market</p>
+      </div>
+      <div class="metric-card fade-in">
+        <div class="flex items-center justify-between mb-2">
+          <i class="fas fa-dollar-sign text-3xl"></i>
+          <span class="text-sm opacity-80">Market Cap</span>
+        </div>
+        <h3 class="text-3xl font-bold mb-1" id="marketCapValue">-</h3>
+        <p class="text-sm opacity-90">Potential Market Cap</p>
+      </div>
+      <div class="metric-card fade-in">
+        <div class="flex items-center justify-between mb-2">
+          <i class="fas fa-chart-line text-3xl"></i>
+          <span class="text-sm opacity-80">Growth</span>
+        </div>
+        <h3 class="text-3xl font-bold mb-1" id="growthValue">-</h3>
+        <p class="text-sm opacity-90">Market Growth Rate</p>
+      </div>
+    </div>
+
+    <!-- Idea Analysis -->
+    <div class="glass-card p-8 mb-8 fade-in">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">
+        <i class="fas fa-lightbulb text-yellow-500"></i> Idea Analysis
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-2">Value Proposition</h3>
+          <p class="text-gray-600" id="valueProposition">-</p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-2">Business Model</h3>
+          <p class="text-gray-600" id="businessModel">-</p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-2">Innovation Level</h3>
+          <span class="badge" id="innovationBadge">-</span>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-2">Uniqueness Score</h3>
+          <div class="flex items-center gap-3">
+            <div class="flex-1 progress-bar">
+              <div class="progress-fill" id="uniquenessBar" style="width: 0%"></div>
+            </div>
+            <span class="font-bold text-purple-600" id="uniquenessScore">0/10</span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-6">
+        <h3 class="font-semibold text-gray-700 mb-3">Key Insights</h3>
+        <ul class="space-y-2" id="keyInsights"></ul>
+      </div>
+    </div>
+
+    <!-- Market Analysis -->
+    <div class="glass-card p-8 mb-8 fade-in">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">
+        <i class="fas fa-globe text-blue-500"></i> Market Analysis
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-4">Market Size</h3>
+          <div class="chart-container">
+            <canvas id="marketSizeChart"></canvas>
+          </div>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-4">Market Trends</h3>
+          <ul class="space-y-3" id="marketTrends"></ul>
+        </div>
+      </div>
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-purple-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600 mb-1">Market Maturity</p>
+          <p class="text-xl font-bold text-purple-600" id="marketMaturity">-</p>
+        </div>
+        <div class="bg-blue-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600 mb-1">Target Demographics</p>
+          <p class="text-sm font-semibold text-blue-600" id="targetDemo">-</p>
+        </div>
+        <div class="bg-green-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600 mb-1">Growth Rate</p>
+          <p class="text-xl font-bold text-green-600" id="marketGrowth">-</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Competitor Analysis -->
+    <div class="glass-card p-8 mb-8 fade-in">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">
+        <i class="fas fa-users text-red-500"></i> Competitor Analysis
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-4">Direct Competitors</h3>
+          <div id="directCompetitors" class="space-y-3"></div>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-4">Competitive Advantages</h3>
+          <ul id="competitiveAdvantages" class="space-y-2"></ul>
+          <h3 class="font-semibold text-gray-700 mb-2 mt-6">Market Gaps</h3>
+          <ul id="marketGaps" class="space-y-2"></ul>
+        </div>
+      </div>
+      <div class="mt-6">
+        <h3 class="font-semibold text-gray-700 mb-2">Differentiation Score</h3>
+        <div class="flex items-center gap-3">
+          <div class="flex-1 progress-bar">
+            <div class="progress-fill" id="differentiationBar" style="width: 0%"></div>
+          </div>
+          <span class="font-bold text-purple-600" id="differentiationScore">0/10</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Financial Analysis -->
+    <div class="glass-card p-8 mb-8 fade-in">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">
+        <i class="fas fa-money-bill-wave text-green-500"></i> Financial Analysis
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-4">Revenue Projections (5 Years)</h3>
+          <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+        <div class="space-y-4">
+          <div class="bg-green-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 mb-1">Investment Required</p>
+            <p class="text-2xl font-bold text-green-600" id="investmentRequired">-</p>
+          </div>
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 mb-1">ROI Potential</p>
+            <p class="text-2xl font-bold text-blue-600" id="roiPotential">-</p>
+          </div>
+          <div class="bg-purple-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 mb-1">Profitability Timeline</p>
+            <p class="text-2xl font-bold text-purple-600" id="profitabilityTimeline">-</p>
+          </div>
+          <div class="bg-orange-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 mb-1">Financial Risk</p>
+            <span class="badge" id="financialRiskBadge">-</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SWOT Analysis -->
+    <div class="glass-card p-8 mb-8 fade-in">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">
+        <i class="fas fa-th text-indigo-500"></i> SWOT Analysis
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-green-50 p-6 rounded-lg">
+          <h3 class="font-bold text-green-700 mb-3 flex items-center">
+            <i class="fas fa-check-circle mr-2"></i> Strengths
+          </h3>
+          <ul id="strengths" class="space-y-2"></ul>
+        </div>
+        <div class="bg-red-50 p-6 rounded-lg">
+          <h3 class="font-bold text-red-700 mb-3 flex items-center">
+            <i class="fas fa-times-circle mr-2"></i> Weaknesses
+          </h3>
+          <ul id="weaknesses" class="space-y-2"></ul>
+        </div>
+        <div class="bg-blue-50 p-6 rounded-lg">
+          <h3 class="font-bold text-blue-700 mb-3 flex items-center">
+            <i class="fas fa-star mr-2"></i> Opportunities
+          </h3>
+          <ul id="opportunities" class="space-y-2"></ul>
+        </div>
+        <div class="bg-orange-50 p-6 rounded-lg">
+          <h3 class="font-bold text-orange-700 mb-3 flex items-center">
+            <i class="fas fa-exclamation-triangle mr-2"></i> Threats
+          </h3>
+          <ul id="threats" class="space-y-2"></ul>
+        </div>
+      </div>
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-3">Pros</h3>
+          <ul id="pros" class="space-y-2"></ul>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-3">Cons</h3>
+          <ul id="cons" class="space-y-2"></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Future Scope -->
+    <div class="glass-card p-8 mb-8 fade-in">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">
+        <i class="fas fa-rocket text-purple-500"></i> Future Scope & Potential
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="bg-purple-50 p-6 rounded-lg text-center">
+          <i class="fas fa-expand-arrows-alt text-4xl text-purple-600 mb-3"></i>
+          <p class="text-sm text-gray-600 mb-2">Scalability</p>
+          <p class="text-3xl font-bold text-purple-600" id="scalabilityScore">-/10</p>
+        </div>
+        <div class="bg-blue-50 p-6 rounded-lg text-center">
+          <i class="fas fa-shield-alt text-4xl text-blue-600 mb-3"></i>
+          <p class="text-sm text-gray-600 mb-2">Long-term Viability</p>
+          <span class="badge" id="viabilityBadge">-</span>
+        </div>
+        <div class="bg-green-50 p-6 rounded-lg text-center">
+          <i class="fas fa-microchip text-4xl text-green-600 mb-3"></i>
+          <p class="text-sm text-gray-600 mb-2">Tech Adoption</p>
+          <span class="badge" id="techAdoptionBadge">-</span>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-3">Expansion Opportunities</h3>
+          <ul id="expansionOpportunities" class="space-y-2"></ul>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-3">Future Trends</h3>
+          <ul id="futureTrends" class="space-y-2"></ul>
+        </div>
+      </div>
+      <div class="mt-6 bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-lg">
+        <h3 class="font-semibold text-gray-700 mb-2">5-Year Outlook</h3>
+        <p class="text-gray-700" id="fiveYearOutlook">-</p>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="glass-card p-6 text-center">
+      <button onclick="window.print()" class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg transition-all duration-300 mr-4">
+        <i class="fas fa-print mr-2"></i> Print Report
+      </button>
+      <button onclick="location.reload()" class="bg-gray-600 text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg transition-all duration-300">
+        <i class="fas fa-redo mr-2"></i> New Analysis
+      </button>
+    </div>
+  </div>
+
+  <script src="/static/business_analyzer.js"></script>
+</body>
+</html>

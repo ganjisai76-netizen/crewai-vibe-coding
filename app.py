@@ -47,7 +47,6 @@ def generate():
             message_queue.put({'type': 'msg', 'agent': 'System', 'text': '🚀 Initializing Vibe Coding agents...'})
             time.sleep(0.3)
             
-            # Frontend Agent - Generates HTML/CSS/JS
             frontend_agent = Agent(
                 role='Frontend Developer',
                 goal='Generate complete, production-ready HTML with Tailwind CSS and JavaScript',
@@ -56,7 +55,6 @@ def generate():
                 verbose=False
             )
             
-            # Backend Agent - Generates Flask/Python pseudocode
             backend_agent = Agent(
                 role='Backend Developer',
                 goal='Generate clean, well-structured Python Flask backend code',
@@ -100,7 +98,6 @@ Requirements:
             
             message_queue.put({'type': 'msg', 'agent': 'Frontend', 'text': f'🎨 Designing UI for {idea}...'})
             
-            # Run frontend agent
             frontend_crew = Crew(
                 agents=[frontend_agent],
                 tasks=[frontend_task],
@@ -111,16 +108,14 @@ Requirements:
             frontend_result = frontend_crew.kickoff()
             frontend_code = str(frontend_result)
             
-            # Clean up markdown if present
-            if '```html' in frontend_code:
-                frontend_code = frontend_code.split('```html')[1].split('```')[0].strip()
+            if '```
+                frontend_code = frontend_code.split('```html').split('```
             elif '```' in frontend_code:
-                frontend_code = frontend_code.split('```')[1].split('```')[0].strip()
+                frontend_code = frontend_code.split('``````')[0].strip()
             
             message_queue.put({'type': 'frontend_code', 'agent': 'Frontend', 'text': frontend_code})
             message_queue.put({'type': 'msg', 'agent': 'Backend', 'text': f'⚙️ Building backend logic for {idea}...'})
             
-            # Run backend agent
             backend_crew = Crew(
                 agents=[backend_agent],
                 tasks=[backend_task],
@@ -131,11 +126,10 @@ Requirements:
             backend_result = backend_crew.kickoff()
             backend_code = str(backend_result)
             
-            # Clean up markdown if present
-            if '```python' in backend_code:
-                backend_code = backend_code.split('```python')[1].split('```')[0].strip()
+            if '```
+                backend_code = backend_code.split('```python').split('```
             elif '```' in backend_code:
-                backend_code = backend_code.split('```')[1].split('```')[0].strip()
+                backend_code = backend_code.split('``````')[0].strip()
             
             message_queue.put({'type': 'backend_code', 'agent': 'Backend', 'text': backend_code})
             message_queue.put({'type': 'done'})
@@ -162,5 +156,6 @@ def stream(stream_id):
                 break
     return Response(event_stream(), mimetype='text/event-stream')
 
-if __name__ == '__main__':
-    app.run(debug=True, threaded=True)
+# IMPORTANT: Remove these lines for Render deployment
+# if __name__ == '__main__':
+#     app.run(debug=True, threaded=True)

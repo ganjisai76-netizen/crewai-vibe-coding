@@ -108,10 +108,15 @@ Requirements:
             frontend_result = frontend_crew.kickoff()
             frontend_code = str(frontend_result)
             
-            if '```
-                frontend_code = frontend_code.split('```html').split('```
+            # Clean up markdown if present
+            if '```html' in frontend_code:
+                parts = frontend_code.split('```html')
+                if len(parts) > 1:
+                    frontend_code = parts[1].split('```')[0].strip()
             elif '```' in frontend_code:
-                frontend_code = frontend_code.split('``````')[0].strip()
+                parts = frontend_code.split('```')
+                if len(parts) > 2:  # At least one complete code block
+                    frontend_code = parts[1].split('```')[0].strip()
             
             message_queue.put({'type': 'frontend_code', 'agent': 'Frontend', 'text': frontend_code})
             message_queue.put({'type': 'msg', 'agent': 'Backend', 'text': f'⚙️ Building backend logic for {idea}...'})
@@ -126,10 +131,15 @@ Requirements:
             backend_result = backend_crew.kickoff()
             backend_code = str(backend_result)
             
-            if '```
-                backend_code = backend_code.split('```python').split('```
+            # Clean up markdown if present
+            if '```python' in backend_code:
+                parts = backend_code.split('```python')
+                if len(parts) > 1:
+                    backend_code = parts[1].split('```')[0].strip()
             elif '```' in backend_code:
-                backend_code = backend_code.split('``````')[0].strip()
+                parts = backend_code.split('```')
+                if len(parts) > 2:  # At least one complete code block
+                    backend_code = parts[1].split('```')[0].strip()
             
             message_queue.put({'type': 'backend_code', 'agent': 'Backend', 'text': backend_code})
             message_queue.put({'type': 'done'})
@@ -155,7 +165,3 @@ def stream(stream_id):
                 streams.pop(stream_id, None)
                 break
     return Response(event_stream(), mimetype='text/event-stream')
-
-# IMPORTANT: Remove these lines for Render deployment
-# if __name__ == '__main__':
-#     app.run(debug=True, threaded=True)

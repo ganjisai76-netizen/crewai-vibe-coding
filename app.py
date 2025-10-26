@@ -120,11 +120,11 @@ Include routes, logic, imports. Output ONLY Python code, no explanations.""",
             if CODE_FENCE + 'python' in backend_code:
                 parts = backend_code.split(CODE_FENCE + 'python')
                 if len(parts) > 1:
-                    backend_code = parts.split(CODE_FENCE).strip()[1]
+                    backend_code = parts[1].split(CODE_FENCE)[0].strip()
             elif CODE_FENCE in backend_code:
                 parts = backend_code.split(CODE_FENCE)
                 if len(parts) > 2:
-                    backend_code = parts.strip()[1]
+                    backend_code = parts[1].strip()
             
             message_queue.put({'type': 'backend_code', 'agent': 'Backend', 'text': backend_code})
             message_queue.put({'type': 'done'})

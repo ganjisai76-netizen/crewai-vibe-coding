@@ -16,7 +16,7 @@ CORS(app)
 llm = LLM(
     model="gemini/gemini-2.5-flash",
     api_key=os.getenv("GEMINI_API_KEY"),
-    temperature=0.2,
+    temperature=0.1,
 )
 
 streams = {}
@@ -47,60 +47,40 @@ def generate():
             message_queue.put({'type': 'msg', 'agent': 'System', 'text': '🚀 Initializing Vibe Coding agents...'})
             time.sleep(0.3)
             
-            # Frontend Agent - Generates HTML/CSS/JS
             frontend_agent = Agent(
                 role='Frontend Developer',
-                goal='Generate complete, production-ready HTML with Tailwind CSS and JavaScript',
-                backstory='Expert UI/UX developer specializing in modern, dark-mode interfaces with beautiful gradients and responsive design',
+                goal='Generate complete HTML with Tailwind CSS',
+                backstory='Expert web developer specializing in modern interfaces',
                 llm=llm,
                 verbose=False
             )
             
-            # Backend Agent - Generates Flask/Python pseudocode
             backend_agent = Agent(
                 role='Backend Developer',
-                goal='Generate clean, well-structured Python Flask backend code',
-                backstory='Senior backend engineer who writes elegant, scalable API endpoints and business logic',
+                goal='Generate clean Python Flask code',
+                backstory='Senior backend engineer writing scalable APIs',
                 llm=llm,
                 verbose=False
             )
             
             frontend_task = Task(
-                description=f"""Create a complete, single-file HTML application for: {idea}
+                description=f"""Create HTML for: {idea}
 
-Requirements:
-- Start with <!DOCTYPE html>
-- Use Tailwind CSS via CDN for styling
-- Dark mode design (bg-gray-900, text-white)
-- Modern gradients and rounded corners
-- Fully responsive layout
-- Include all JavaScript functionality inline
-- Beautiful, minimalist aesthetic
-- NO markdown formatting, NO explanations, ONLY pure HTML code
-- The code must be immediately runnable""",
+Use Tailwind CSS CDN, dark mode (bg-gray-900), responsive. Output ONLY pure HTML code, no explanations.""",
                 agent=frontend_agent,
-                expected_output="Complete HTML file with Tailwind CSS and JavaScript"
+                expected_output="HTML code"
             )
             
             backend_task = Task(
-                description=f"""Create Python Flask backend pseudocode/code for: {idea}
+                description=f"""Create Flask backend for: {idea}
 
-Requirements:
-- Flask route definitions with @app.route decorators
-- Function implementations with clear logic
-- API endpoints that would support the frontend
-- Include necessary imports
-- Add comments explaining key logic
-- Use proper Python syntax
-- Keep it concise but functional
-- NO markdown formatting, just clean Python code""",
+Include routes, logic, imports. Output ONLY Python code, no explanations.""",
                 agent=backend_agent,
-                expected_output="Python Flask backend code with routes and logic"
+                expected_output="Python Flask code"
             )
             
             message_queue.put({'type': 'msg', 'agent': 'Frontend', 'text': f'🎨 Designing UI for {idea}...'})
             
-            # Run frontend agent
             frontend_crew = Crew(
                 agents=[frontend_agent],
                 tasks=[frontend_task],
@@ -111,16 +91,20 @@ Requirements:
             frontend_result = frontend_crew.kickoff()
             frontend_code = str(frontend_result)
             
-            # Clean up markdown if present
-            if '```html' in frontend_code:
-                frontend_code = frontend_code.split('```html')[1].split('```')[0].strip()
-            elif '```' in frontend_code:
-                frontend_code = frontend_code.split('```')[1].split('```')[0].strip()
+            # Clean up markdown safely
+            CODE_FENCE = '```'
+            if CODE_FENCE + 'html' in frontend_code:
+                parts = frontend_code.split(CODE_FENCE + 'html')
+                if len(parts) > 1:
+                    frontend_code = parts[1].split(CODE_FENCE)[0].strip()
+            elif CODE_FENCE in frontend_code:
+                parts = frontend_code.split(CODE_FENCE)
+                if len(parts) > 2:
+                    frontend_code = parts[1].strip()
             
             message_queue.put({'type': 'frontend_code', 'agent': 'Frontend', 'text': frontend_code})
             message_queue.put({'type': 'msg', 'agent': 'Backend', 'text': f'⚙️ Building backend logic for {idea}...'})
             
-            # Run backend agent
             backend_crew = Crew(
                 agents=[backend_agent],
                 tasks=[backend_task],
@@ -131,11 +115,16 @@ Requirements:
             backend_result = backend_crew.kickoff()
             backend_code = str(backend_result)
             
-            # Clean up markdown if present
-            if '```python' in backend_code:
-                backend_code = backend_code.split('```python')[1].split('```')[0].strip()
-            elif '```' in backend_code:
-                backend_code = backend_code.split('```')[1].split('```')[0].strip()
+            # Clean up markdown safely
+            CODE_FENCE = '```'
+            if CODE_FENCE + 'python' in backend_code:
+                parts = backend_code.split(CODE_FENCE + 'python')
+                if len(parts) > 1:
+                    backend_code = parts.split(CODE_FENCE).strip()[1]
+            elif CODE_FENCE in backend_code:
+                parts = backend_code.split(CODE_FENCE)
+                if len(parts) > 2:
+                    backend_code = parts.strip()[1]
             
             message_queue.put({'type': 'backend_code', 'agent': 'Backend', 'text': backend_code})
             message_queue.put({'type': 'done'})
@@ -144,7 +133,7 @@ Requirements:
             message_queue.put({'type': 'error', 'text': str(e)})
             message_queue.put({'type': 'done'})
     
-    threading.Thread(target=run_agents).start()
+    threading.Thread(target=run_agents, daemon=True).start()
     return jsonify({'success': True, 'stream_id': stream_id})
 
 @app.route('/stream/<stream_id>')
@@ -155,9 +144,12 @@ def stream(stream_id):
             yield f"data: {json.dumps({'type':'error','text':'Invalid stream'})}\n\n"
             return
         while True:
-            msg = q.get()
-            yield f"data: {json.dumps(msg)}\n\n"
-            if msg.get('type') == 'done':
-                streams.pop(stream_id, None)
+            try:
+                msg = q.get(timeout=300)
+                yield f"data: {json.dumps(msg)}\n\n"
+                if msg.get('type') == 'done':
+                    streams.pop(stream_id, None)
+                    break
+            except:
                 break
     return Response(event_stream(), mimetype='text/event-stream')
